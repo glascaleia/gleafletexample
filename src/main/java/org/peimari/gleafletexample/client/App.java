@@ -48,11 +48,14 @@ public class App implements EntryPoint {
 	public void onModuleLoad() {
 
 		LeafletDrawResourceInjector.ensureInjected();
+		// This is enough if no draw features are used:
+		// LeafletResourceInjector.ensureInjected(); 
 
 		final MapWidget mapWidget = new MapWidget();
 
 		RootPanel.get().add(mapWidget);
 
+		/* EditableMap is Leaflet.Draw spiced js overlay for L.Map */
 		final EditableMap map = mapWidget.getMap().cast();
 		
 		map.setView(LatLng.create(61, 22), 5);
@@ -71,7 +74,6 @@ public class App implements EntryPoint {
 				public void onClick(MouseEvent event) {
 					LatLng latLng = event.getLatLng();
 					Window.alert("Clicked at " + latLng);
-
 				}
 			};
 
@@ -87,7 +89,7 @@ public class App implements EntryPoint {
 
 		RootPanel.get().add(checkBox);
 
-		// Leaflet.Draw
+		// Leaflet.Draw & GeoJSON usage example:
 
 		final GeoJSON featureGroup = GeoJSON.create();
 
