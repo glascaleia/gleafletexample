@@ -3,7 +3,7 @@ package org.peimari.gleafletexample.client;
 import org.peimari.gleaflet.client.AbstractPath;
 import org.peimari.gleaflet.client.Circle;
 import org.peimari.gleaflet.client.ClickListener;
-import org.peimari.gleaflet.client.FeatureGroup;
+import org.peimari.gleaflet.client.EditableMap;
 import org.peimari.gleaflet.client.GeoJSON;
 import org.peimari.gleaflet.client.ILayer;
 import org.peimari.gleaflet.client.LatLng;
@@ -21,7 +21,7 @@ import org.peimari.gleaflet.client.draw.DrawControlOptions;
 import org.peimari.gleaflet.client.draw.LayerCreatedEvent;
 import org.peimari.gleaflet.client.draw.LayerCreatedListener;
 import org.peimari.gleaflet.client.draw.LayerType;
-import org.peimari.gleaflet.client.resources.LeafletResourceInjector;
+import org.peimari.gleaflet.client.resources.LeafletDrawResourceInjector;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.JavaScriptObject;
@@ -47,19 +47,21 @@ public class App implements EntryPoint {
 	 */
 	public void onModuleLoad() {
 
-		LeafletResourceInjector.ensureInjected();
+		LeafletDrawResourceInjector.ensureInjected();
 
 		final MapWidget mapWidget = new MapWidget();
 
 		RootPanel.get().add(mapWidget);
 
-		mapWidget.getMap().setView(LatLng.create(61, 22), 5);
+		final EditableMap map = mapWidget.getMap().cast();
+		
+		map.setView(LatLng.create(61, 22), 5);
 
 		TileLayerOptions tileOptions = TileLayerOptions.create();
 		tileOptions.setSubDomains("a", "b", "c");
 		TileLayer layer = TileLayer.create(
 				"http://{s}.tile.osm.org/{z}/{x}/{y}.png", tileOptions);
-		mapWidget.getMap().addLayer(layer);
+		map.addLayer(layer);
 
 		final CheckBox checkBox = new CheckBox("Toggle click listener");
 		checkBox.addClickHandler(new ClickHandler() {
@@ -75,9 +77,9 @@ public class App implements EntryPoint {
 
 			public void onClick(ClickEvent event) {
 				if (checkBox.getValue()) {
-					mapWidget.getMap().addClickListener(leafletClickListener);
+					map.addClickListener(leafletClickListener);
 				} else {
-					mapWidget.getMap().removeClickListeners();
+					map.removeClickListeners();
 				}
 
 			}
@@ -95,15 +97,15 @@ public class App implements EntryPoint {
 				pathOptions);
 		featureGroup.addLayer(circle);
 
-		mapWidget.getMap().addLayer(featureGroup);
+		map.addLayer(featureGroup);
 
 		DrawControlOptions drawOptions = DrawControlOptions.create();
 		drawOptions.setEditableFeatureGroup(featureGroup);
 		Draw drawControl = Draw.create(drawOptions);
 
-		mapWidget.getMap().addControl(drawControl);
+		map.addControl(drawControl);
 
-		mapWidget.getMap().addLayerCreatedListener(new LayerCreatedListener() {
+		map.addLayerCreatedListener(new LayerCreatedListener() {
 
 			public void onCreated(LayerCreatedEvent event) {
 				LayerType type = event.getLayerType();

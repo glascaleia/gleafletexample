@@ -6,3 +6,7 @@
 .settings/
 
 target/
+
+src/main/gwt-unitCache/
+src/main/webapp/App/
+src/main/webapp/WEB-INF/deploy/App/rpcPolicyManifest/manifest.txt
