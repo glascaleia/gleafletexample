@@ -3,7 +3,9 @@ package org.peimari.gleafletexample.client;
 import org.peimari.gleaflet.client.AbstractPath;
 import org.peimari.gleaflet.client.Circle;
 import org.peimari.gleaflet.client.ClickListener;
+import org.peimari.gleaflet.client.EditableFeature;
 import org.peimari.gleaflet.client.EditableMap;
+import org.peimari.gleaflet.client.FeatureEditedListener;
 import org.peimari.gleaflet.client.GeoJSON;
 import org.peimari.gleaflet.client.ILayer;
 import org.peimari.gleaflet.client.LatLng;
@@ -13,6 +15,7 @@ import org.peimari.gleaflet.client.MouseEvent;
 import org.peimari.gleaflet.client.PathOptions;
 import org.peimari.gleaflet.client.Polygon;
 import org.peimari.gleaflet.client.Polyline;
+import org.peimari.gleaflet.client.PolylineOptions;
 import org.peimari.gleaflet.client.Rectangle;
 import org.peimari.gleaflet.client.TileLayer;
 import org.peimari.gleaflet.client.TileLayerOptions;
@@ -21,6 +24,10 @@ import org.peimari.gleaflet.client.draw.DrawControlOptions;
 import org.peimari.gleaflet.client.draw.LayerCreatedEvent;
 import org.peimari.gleaflet.client.draw.LayerCreatedListener;
 import org.peimari.gleaflet.client.draw.LayerType;
+import org.peimari.gleaflet.client.draw.LayersDeletedEvent;
+import org.peimari.gleaflet.client.draw.LayersDeletedListener;
+import org.peimari.gleaflet.client.draw.LayersEditedEvent;
+import org.peimari.gleaflet.client.draw.LayersEditedListener;
 import org.peimari.gleaflet.client.resources.LeafletDrawResourceInjector;
 
 import com.google.gwt.core.client.EntryPoint;
@@ -49,7 +56,7 @@ public class App implements EntryPoint {
 
 		LeafletDrawResourceInjector.ensureInjected();
 		// This is enough if no draw features are used:
-		// LeafletResourceInjector.ensureInjected(); 
+		// LeafletResourceInjector.ensureInjected();
 
 		final MapWidget mapWidget = new MapWidget();
 
@@ -57,7 +64,7 @@ public class App implements EntryPoint {
 
 		/* EditableMap is Leaflet.Draw spiced js overlay for L.Map */
 		final EditableMap map = mapWidget.getMap().cast();
-		
+
 		map.setView(LatLng.create(61, 22), 5);
 
 		TileLayerOptions tileOptions = TileLayerOptions.create();
@@ -107,9 +114,27 @@ public class App implements EntryPoint {
 
 		map.addControl(drawControl);
 
+		map.addLayersEditedListener(new LayersEditedListener() {
+
+			@Override
+			public void onEdit(LayersEditedEvent event) {
+				Window.alert("Edited " + event.getLayers().getLayers().length
+						+ " layer(s)");
+			}
+		});
+
+		map.addLayersDeletedListener(new LayersDeletedListener() {
+
+			@Override
+			public void onDelete(LayersDeletedEvent event) {
+				Window.alert("Deleted " + event.getLayers().getLayers().length
+						+ " layer(s)");
+			}
+		});
+
 		map.addLayerCreatedListener(new LayerCreatedListener() {
 
-			public void onCreated(LayerCreatedEvent event) {
+			public void onCreate(LayerCreatedEvent event) {
 				LayerType type = event.getLayerType();
 				/* type specific actions... */
 				switch (type) {
@@ -207,6 +232,36 @@ public class App implements EntryPoint {
 					Window.alert("Failed to load features");
 				}
 
+			}
+		});
+
+		RootPanel.get().add(button);
+
+		JsArray<LatLng> jsArray = JsArray.createArray().cast();
+		jsArray.push(LatLng.create(60, 23));
+		jsArray.push(LatLng.create(61, 24));
+		PolylineOptions options = PolylineOptions.create();
+		options.setColor("green");
+		Polyline polyline = Polyline.create(jsArray, options);
+		map.addLayer(polyline);
+
+		/* Editable feature contains generic editing API */
+		final EditableFeature editableFeature = polyline.cast();
+		
+		editableFeature.addEditListener(new FeatureEditedListener() {
+			
+			@Override
+			public void onEdit() {
+				Window.alert("Green feature edited");
+			}
+		});
+
+		button = new Button("Toggle green polyline edit mode");
+		button.addClickHandler(new ClickHandler() {
+
+			@Override
+			public void onClick(ClickEvent event) {
+				editableFeature.setEnabled(!editableFeature.isEnabled());
 			}
 		});
 
